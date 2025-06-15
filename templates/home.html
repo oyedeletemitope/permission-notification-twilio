@@ -1,0 +1,245 @@
+{{define "home.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans">
+
+<div class="max-w-4xl mx-auto mt-8">
+    <!-- Flash messages -->
+    {{range .flash_messages}}
+    <div class="{{if eq .type "success"}}bg-green-100 border-green-500 text-green-700{{else if eq .type "error"}}bg-red-100 border-red-500 text-red-700{{else}}bg-blue-100 border-blue-500 text-blue-700{{end}} border-l-4 p-4 mb-6">
+        <p class="flex items-center">
+            {{if eq .type "success"}}
+            <i class="fas fa-check-circle mr-2"></i>
+            {{else if eq .type "error"}}
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            {{else}}
+            <i class="fas fa-info-circle mr-2"></i>
+            {{end}}
+            {{.message}}
+        </p>
+    </div>
+    {{end}}
+
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-12 text-center">
+            <h2 class="text-3xl font-bold mb-2">Welcome, {{.user_name}}!</h2>
+            <p class="text-blue-100">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-800 bg-opacity-50">
+                    <i class="fas {{if eq .user_role "manager"}}fa-user-tie{{else if eq .user_role "chief_programmer"}}fa-code{{else if eq .user_role "chief_technician"}}fa-tools{{else if eq .user_role "programmer"}}fa-laptop-code{{else if eq .user_role "technician"}}fa-wrench{{else}}fa-user{{end}} mr-2"></i>
+                    {{if eq .user_role "manager"}}Manager
+                    {{else if eq .user_role "chief_programmer"}}Chief Programmer
+                    {{else if eq .user_role "chief_technician"}}Chief Technician
+                    {{else if eq .user_role "programmer"}}Programmer
+                    {{else if eq .user_role "technician"}}Technician
+                    {{else}}{{.user_role}}{{end}}
+                </span>
+            </p>
+        </div>
+
+        <div class="p-6">
+            <div class="flex justify-center mb-6">
+                <div class="inline-flex overflow-hidden bg-white border divide-x rounded-lg shadow-sm">
+                    <!-- Employee level access (programmer, technician) -->
+                    {{if or (eq .user_role "programmer") (eq .user_role "technician")}}
+                    <a href="/submit-request" class="px-5 py-3 text-xs font-medium text-gray-600 transition-colors duration-200 bg-gray-100 sm:text-sm hover:bg-blue-50 flex items-center">
+                        <i class="fas fa-file-alt mr-2 text-blue-500"></i>
+                        Submit Request
+                    </a>
+                    {{end}}
+
+                    <!-- Management level access (manager, chief_programmer, chief_technician) -->
+                    {{if or (eq .user_role "manager") (eq .user_role "chief_programmer") (eq .user_role "chief_technician")}}
+                    <a href="/requests" class="px-5 py-3 text-xs font-medium text-gray-600 transition-colors duration-200 sm:text-sm hover:bg-blue-50 flex items-center">
+                        <i class="fas fa-clipboard-list mr-2 text-blue-500"></i>
+                        Manage Requests
+                    </a>
+                    <a href="/notify" class="px-5 py-3 text-xs font-medium text-gray-600 transition-colors duration-200 sm:text-sm hover:bg-blue-50 flex items-center">
+                        <i class="fas fa-bell mr-2 text-blue-500"></i>
+                        Send Notifications
+                    </a>
+                    {{end}}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                <!-- Submit Request Card - For programmers and technicians -->
+                {{if or (eq .user_role "programmer") (eq .user_role "technician")}}
+                <div class="bg-blue-50 overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
+                                <i class="fas fa-file-alt text-white"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Submit Request</dt>
+                                    <dd class="flex items-baseline">
+                                        <div class="text-lg font-semibold text-gray-900">
+                                            Need Approval?
+                                        </div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="mt-5">
+                            <a href="/submit-request" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+                                Submit New Request
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+
+                <!-- Manage Requests Card - For all management roles -->
+                {{if or (eq .user_role "manager") (eq .user_role "chief_programmer") (eq .user_role "chief_technician")}}
+                <div class="bg-green-50 overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
+                                <i class="fas fa-clipboard-check text-white"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Manage Requests</dt>
+                                    <dd class="flex items-baseline">
+                                        <div class="text-lg font-semibold text-gray-900">
+                                            {{if eq .user_role "manager"}}All requests
+                                            {{else if eq .user_role "chief_programmer"}}Programmer requests
+                                            {{else if eq .user_role "chief_technician"}}Technician requests
+                                            {{end}}
+                                        </div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="mt-5">
+                            <a href="/requests" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700">
+                                View Pending Requests
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Send Notifications Card - For all management roles -->
+                <div class="bg-purple-50 overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
+                                <i class="fas fa-bell text-white"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Send Notifications</dt>
+                                    <dd class="flex items-baseline">
+                                        <div class="text-lg font-semibold text-gray-900">
+                                            {{if eq .user_role "manager"}}To all employees
+                                            {{else if eq .user_role "chief_programmer"}}To programmers
+                                            {{else if eq .user_role "chief_technician"}}To technicians
+                                            {{end}}
+                                        </div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="mt-5">
+                            <a href="/notify" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700">
+                                Send Notifications
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+
+                <!-- System Information Card - For all users -->
+                <div class="bg-gray-50 overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-gray-500 rounded-md p-3">
+                                <i class="fas fa-info-circle text-white"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">System Information</dt>
+                                    <dd class="flex items-baseline">
+                                        <div class="text-lg font-semibold text-gray-900">
+                                            Role-Based Access System
+                                        </div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="mt-5 text-sm text-gray-600">
+                            <p class="mb-2">
+                                <i class="fas fa-mobile-alt mr-2"></i> SMS notifications are sent automatically.
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-shield-alt mr-2"></i> All actions are role-based.
+                            </p>
+                            <p>
+                                <i class="fas fa-user-tag mr-2"></i> Your role: <strong>{{.user_role}}</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role-specific information card -->
+                <div class="{{if or (eq .user_role "programmer") (eq .user_role "technician")}}bg-blue-50{{else}}bg-orange-50{{end}} overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 {{if or (eq .user_role "programmer") (eq .user_role "technician")}}bg-blue-500{{else}}bg-orange-500{{end}} rounded-md p-3">
+                                <i class="fas {{if or (eq .user_role "programmer") (eq .user_role "technician")}}fa-tasks{{else}}fa-crown{{end}} text-white"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Your Permissions</dt>
+                                    <dd class="flex items-baseline">
+                                        <div class="text-lg font-semibold text-gray-900">
+                                            {{if eq .user_role "manager"}}Full Access
+                                            {{else if eq .user_role "chief_programmer"}}Programmer Management
+                                            {{else if eq .user_role "chief_technician"}}Technician Management
+                                            {{else if or (eq .user_role "programmer") (eq .user_role "technician")}}Request Submission
+                                            {{end}}
+                                        </div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="mt-5 text-sm text-gray-600">
+                            {{if eq .user_role "manager"}}
+                            <p>• View and manage all requests</p>
+                            <p>• Send notifications to all roles</p>
+                            <p>• Full system access</p>
+                            {{else if eq .user_role "chief_programmer"}}
+                            <p>• View programmer requests only</p>
+                            <p>• Approve/reject programmer requests</p>
+                            <p>• Send notifications to programmers</p>
+                            {{else if eq .user_role "chief_technician"}}
+                            <p>• View technician requests only</p>
+                            <p>• Approve/reject technician requests</p>
+                            <p>• Send notifications to technicians</p>
+                            {{else if or (eq .user_role "programmer") (eq .user_role "technician")}}
+                            <p>• Submit new requests</p>
+                            <p>• View your request status</p>
+                            <p>• Receive SMS notifications</p>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>  
+</div>
+
+</body>
+</html>
+{{end}}

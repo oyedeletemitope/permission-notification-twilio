@@ -1,0 +1,192 @@
+{{define "requests.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.page_title}} - Manage Requests</title>
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome via CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans">
+
+<div class="container mx-auto mt-6">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="bg-blue-600 text-white px-6 py-4">
+            <h2 class="text-2xl font-bold flex items-center">
+                <i class="fas fa-clipboard-list mr-3"></i> 
+                {{if .page_title}}{{.page_title}}{{else}}Manage Requests{{end}}
+            </h2>
+            {{if eq .user_role "manager"}}
+            <p class="text-blue-100 text-sm mt-1">Viewing all requests from programmers and technicians</p>
+            {{else if eq .user_role "chief_programmer"}}
+            <p class="text-blue-100 text-sm mt-1">Viewing requests from programmers only</p>
+            {{else if eq .user_role "chief_technician"}}
+            <p class="text-blue-100 text-sm mt-1">Viewing requests from technicians only</p>
+            {{end}}
+        </div>
+
+        <!-- Flash Messages with Auto-Hide -->
+        {{if .flash_messages}}
+            {{range .flash_messages}}
+                <div id="flash-message" class="{{if eq .Type "success"}}bg-green-100 border-green-500 text-green-700{{else if eq .Type "error"}}bg-red-100 border-red-500 text-red-700{{else}}bg-blue-100 border-blue-500 text-blue-700{{end}} border-l-4 p-4 mx-6 my-4 transition-opacity duration-500">
+                    <p class="flex items-center">
+                        {{if eq .Type "success"}}
+                        <i class="fas fa-check-circle mr-2"></i>
+                        {{else if eq .Type "error"}}
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        {{else}}
+                        <i class="fas fa-info-circle mr-2"></i>
+                        {{end}}
+                        {{.Message}}
+                    </p>
+                </div>
+            {{end}}
+        {{end}}
+
+        <div class="p-6">
+            {{if .requests}}
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-800 text-white">
+                        <tr>
+                            <th class="py-3 px-4 text-left">ID</th>
+                            <th class="py-3 px-4 text-left">Requester</th>
+                            <th class="py-3 px-4 text-left">Role</th>
+                            <th class="py-3 px-4 text-left">Details</th>
+                            <th class="py-3 px-4 text-left">Priority</th>
+                            <th class="py-3 px-4 text-left">Status</th>
+                            <th class="py-3 px-4 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {{range .requests}}
+                        <tr class="hover:bg-gray-50 {{if eq .status "approved"}}bg-green-50{{else if eq .status "rejected"}}bg-red-50{{end}}">
+                            <td class="py-3 px-4 font-mono text-sm">{{.id}}</td>
+                            <td class="py-3 px-4 font-medium">{{.requester_name}}</td>
+                            <td class="py-3 px-4">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    {{if eq .requester_role "programmer"}}bg-purple-100 text-purple-800{{else if eq .requester_role "technician"}}bg-blue-100 text-blue-800{{else}}bg-gray-100 text-gray-800{{end}}">
+                                    {{if eq .requester_role "programmer"}}
+                                    <i class="fas fa-code mr-1"></i>
+                                    {{else if eq .requester_role "technician"}}
+                                    <i class="fas fa-wrench mr-1"></i>
+                                    {{else}}
+                                    <i class="fas fa-user mr-1"></i>
+                                    {{end}}
+                                    {{.requester_role}}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <div class="max-w-xs break-words">{{.details}}</div>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    {{if eq .priority "high"}}bg-red-100 text-red-800{{else if eq .priority "medium"}}bg-yellow-100 text-yellow-800{{else if eq .priority "low"}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-800{{end}}">
+                                    {{if eq .priority "high"}}
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    {{else if eq .priority "medium"}}
+                                    <i class="fas fa-minus mr-1"></i>
+                                    {{else if eq .priority "low"}}
+                                    <i class="fas fa-arrow-down mr-1"></i>
+                                    {{else}}
+                                    <i class="fas fa-question mr-1"></i>
+                                    {{end}}
+                                    {{if .priority}}{{.priority}}{{else}}medium{{end}}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    {{if eq .status "approved"}}bg-green-100 text-green-800{{else if eq .status "rejected"}}bg-red-100 text-red-800{{else}}bg-yellow-100 text-yellow-800{{end}}">
+                                    {{if eq .status "approved"}}
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    {{else if eq .status "rejected"}}
+                                    <i class="fas fa-times-circle mr-1"></i>
+                                    {{else}}
+                                    <i class="fas fa-clock mr-1"></i>
+                                    {{end}}
+                                    {{.status}}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4">
+                                {{if eq .status "pending"}}
+                                <div class="flex space-x-2">
+                                    <a href="/approve?id={{.id}}&action=approve" 
+                                       class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+                                       onclick="return confirm('Approve this request from {{.requester_name}} ({{.requester_role}})?\n\nRequest: {{.details}}\nPriority: {{if .priority}}{{.priority}}{{else}}medium{{end}}\n\nAn SMS notification will be sent.')">
+                                       <i class="fas fa-check mr-1"></i> Approve
+                                    </a>
+                                    <a href="/approve?id={{.id}}&action=reject" 
+                                       class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+                                       onclick="return confirm('Reject this request from {{.requester_name}} ({{.requester_role}})?\n\nRequest: {{.details}}\nPriority: {{if .priority}}{{.priority}}{{else}}medium{{end}}\n\nAn SMS notification will be sent.')">
+                                       <i class="fas fa-times mr-1"></i> Reject
+                                    </a>
+                                </div>
+                                {{else}}
+                                <span class="text-gray-500 flex items-center text-sm">
+                                    <i class="fas fa-check-circle mr-1"></i> 
+                                    {{if eq .status "approved"}}Approved{{else}}Rejected{{end}}
+                                </span>
+                                {{end}}
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+            {{else}}
+            <div class="flex items-center justify-center p-8 bg-blue-50 rounded-lg">
+                <div class="text-center">
+                    <i class="fas fa-inbox text-blue-400 text-4xl mb-3"></i>
+                    <h3 class="text-lg font-medium text-blue-900 mb-1">No requests found</h3>
+                    <p class="text-blue-600">
+                        {{if eq .user_role "manager"}}
+                        No requests from programmers or technicians at this time.
+                        {{else if eq .user_role "chief_programmer"}}
+                        No requests from programmers at this time.
+                        {{else if eq .user_role "chief_technician"}}
+                        No requests from technicians at this time.
+                        {{else}}
+                        No requests available for your role.
+                        {{end}}
+                    </p>
+                </div>
+            </div>
+            {{end}}
+        </div>
+        
+        <div class="bg-gray-50 px-6 py-4 border-t">
+            <div class="flex items-center justify-between">
+                <p class="text-sm text-gray-600 flex items-center">
+                    <i class="fas fa-mobile-alt mr-2 text-gray-500"></i> 
+                    Approval or rejection actions will send SMS notifications to the requester.
+                </p>
+                <div class="text-sm text-gray-500">
+                    Logged in as: <span class="font-medium">{{.user_name}}</span> ({{.user_role}})
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-hide flash messages after 5 seconds -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const flashMessage = document.getElementById('flash-message');
+    if (flashMessage) {
+        setTimeout(function() {
+            flashMessage.style.opacity = '0';
+            setTimeout(function() {
+                flashMessage.style.display = 'none';
+            }, 500); // Wait for fade transition to complete
+        }, 5000); // Hide after 5 seconds
+    }
+});
+</script>
+
+</body>
+</html>
+{{end}}

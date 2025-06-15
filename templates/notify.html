@@ -1,0 +1,202 @@
+{{define "notify.html"}}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">
+                <i class="fas fa-bullhorn mr-2 text-blue-600"></i>Send Notifications
+            </h2>
+            <div class="text-sm text-gray-600">
+                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">{{.user_role}}</span>
+            </div>
+        </div>
+
+        <!-- Permission Info Card -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h3 class="font-semibold text-blue-800 mb-2">
+                <i class="fas fa-info-circle mr-2"></i>Your Notification Permissions
+            </h3>
+            <div class="text-sm text-blue-700">
+                {{if eq .user_role "manager"}}
+                    <p>✅ <strong>Manager Access:</strong> You can send notifications to <strong>ALL users</strong> or select specific roles.</p>
+                {{else if eq .user_role "chief_programmer"}}
+                    <p>✅ <strong>Chief Programmer Access:</strong> You can send notifications to <strong>programmers</strong> and other <strong>chief programmers</strong>.</p>
+                {{else if eq .user_role "chief_technician"}}
+                    <p>✅ <strong>Chief Technician Access:</strong> You can send notifications to <strong>technicians</strong> and other <strong>chief technicians</strong>.</p>
+                {{end}}
+            </div>
+        </div>
+
+        <!-- Only show form if user has notification permissions -->
+        {{if or .can_notify_all .allowed_targets}}
+        <form method="POST" action="/notify" class="space-y-6">
+            <!-- Message Content -->
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-tag mr-1"></i>Subject *
+                    </label>
+                    <input type="text" name="subject" required
+                           placeholder="e.g., Team Meeting Tomorrow"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-comment mr-1"></i>Message *
+                    </label>
+                    <textarea name="message" required rows="4"
+                              placeholder="Enter your message here..."
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
+            </div>
+
+            <!-- Recipients Selection -->
+            <div class="border-t pt-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-users mr-2"></i>Select Recipients
+                </h3>
+                
+                {{if eq .user_role "manager"}}
+                <!-- Manager Interface - Simple checkboxes for demo roles -->
+                <div class="space-y-3">
+                    <div class="text-sm font-medium text-gray-700 mb-3">Select who to notify (you can select multiple):</div>
+                    
+                    <!-- Demo Role Options Only -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer border">
+                            <input type="checkbox" name="target_roles" value="programmer" class="mr-3 target-role-checkbox">
+                            <span class="text-sm font-medium">💻 Programmers</span>
+                        </label>
+                        
+                        <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer border">
+                            <input type="checkbox" name="target_roles" value="technician" class="mr-3 target-role-checkbox">
+                            <span class="text-sm font-medium">🔧 Technicians</span>
+                        </label>
+                        
+                        <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer border">
+                            <input type="checkbox" name="target_roles" value="chief_programmer" class="mr-3 target-role-checkbox">
+                            <span class="text-sm font-medium">🎯 Chief Programmers</span>
+                        </label>
+                        
+                        <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer border">
+                            <input type="checkbox" name="target_roles" value="chief_technician" class="mr-3 target-role-checkbox">
+                            <span class="text-sm font-medium">⚙️ Chief Technicians</span>
+                        </label>
+                    </div>
+                    
+                    <!-- Quick select buttons -->
+                    <div class="flex gap-2 mt-4">
+                        <button type="button" id="select-all-roles" class="text-sm bg-blue-100 text-blue-700 px-3 py-2 rounded hover:bg-blue-200">
+                            Select All
+                        </button>
+                        <button type="button" id="clear-all-selections" class="text-sm bg-gray-100 text-gray-700 px-3 py-2 rounded hover:bg-gray-200">
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+
+                {{else}}
+                <!-- Non-Manager Interface - Original radio button approach -->
+                <div class="space-y-4">
+                    {{if .allowed_targets}}
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <label class="flex items-center cursor-pointer mb-3">
+                            <input type="radio" name="recipient_type" value="roles" class="mr-3" id="roles-radio" checked>
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-800">
+                                    <i class="fas fa-user-tag mr-2 text-purple-600"></i>Select Roles to Notify
+                                </div>
+                                <div class="text-sm text-gray-600">Choose which roles to send notifications to</div>
+                            </div>
+                        </label>
+
+                        <!-- Role checkboxes for non-managers -->
+                        <div class="ml-8 space-y-2">
+                            <div class="text-sm font-medium text-gray-700 mb-2">Select roles to notify:</div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {{range .allowed_targets}}
+                                <label class="flex items-center p-2 bg-gray-50 rounded hover:bg-gray-100 cursor-pointer">
+                                    <input type="checkbox" name="target_roles" value="{{.}}" class="mr-2 target-role-checkbox">
+                                    <span class="text-sm">
+                                        {{if eq . "programmer"}}💻 Programmers
+                                        {{else if eq . "technician"}}🔧 Technicians
+                                        {{else if eq . "chief_programmer"}}🎯 Chief Programmers
+                                        {{else if eq . "chief_technician"}}⚙️ Chief Technicians
+                                        {{else if eq . "manager"}}👔 Managers
+                                        {{else if eq . "employee"}}👤 Employees
+                                        {{else if eq . "hr"}}👥 HR Staff
+                                        {{else if eq . "finance"}}💰 Finance Staff
+                                        {{else if eq . "security"}}🔒 Security Staff
+                                        {{else}}{{.}}
+                                        {{end}}
+                                    </span>
+                                </label>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+                {{end}}
+            </div>
+
+            <!-- Submit Button - Show for users with permissions -->
+            <div class="flex justify-center pt-6 border-t">
+                <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition flex items-center">
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    Send Notification
+                </button>
+            </div>
+        </form>
+
+        {{else}}
+        <!-- No permissions message -->
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-center text-red-800">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span class="font-medium">No notification permissions</span>
+            </div>
+            <p class="text-sm text-red-700 mt-1">Your role does not have permission to send notifications.</p>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Use a consistent class name for all role checkboxes
+    const roleCheckboxes = document.querySelectorAll('.target-role-checkbox');
+    const selectAllBtn = document.getElementById('select-all-roles');
+    const clearAllBtn = document.getElementById('clear-all-selections');
+    
+    // Select all roles button
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function() {
+            roleCheckboxes.forEach(cb => cb.checked = true);
+        });
+    }
+    
+    // Clear all selections button
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function() {
+            roleCheckboxes.forEach(cb => cb.checked = false);
+        });
+    }
+    
+    // Form validation
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Check if any role is selected
+            const anyRoleChecked = Array.from(roleCheckboxes).some(cb => cb.checked);
+            
+            if (!anyRoleChecked) {
+                e.preventDefault();
+                alert('Please select at least one role to send the notification to.');
+                return;
+            }
+        });
+    }
+});
+</script>
+{{end}}

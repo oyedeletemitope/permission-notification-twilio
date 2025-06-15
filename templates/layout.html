@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Permission-Based Request System</title>
+
+    <!-- ✅ Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ✅ Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        nav {
+            margin-bottom: 20px;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        nav a {
+            margin-right: 15px;
+            text-decoration: none;
+            color: #333;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+     
+    <nav>
+        <!-- Always show login and register links for non-authenticated users -->
+        {{if not .is_authenticated}}
+            <a href="/login">Login</a> |
+            <a href="/register">Register</a>
+        {{else}}
+            <!-- For authenticated users, show home and role-specific links -->
+            <a href="/">Home</a>
+            
+            {{if eq .user_role "employee"}}
+                | <a href="/submit-request">Submit Request</a>
+            {{end}}
+            
+            {{if eq .user_role "manager"}}
+                | <a href="/requests">View Requests</a>
+                | <a href="/notify">Notify</a>
+            {{end}}
+            
+            | <a href="/logout">Logout</a>
+        {{end}}
+    </nav>
+    <hr>
+
+    {{if eq .content "register.html"}}{{template "register.html" .}}{{end}}
+    {{if eq .content "login.html"}}{{template "login.html" .}}{{end}}
+    {{if eq .content "submit_request.html"}}{{template "submit_request.html" .}}{{end}}
+    {{if eq .content "requests.html"}}{{template "requests.html" .}}{{end}}
+    {{if eq .content "notify.html"}}{{template "notify.html" .}}{{end}}
+    {{if eq .content "home.html"}}{{template "home.html" .}}{{end}}
+
+</body>
+</html>
