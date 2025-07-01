@@ -47,32 +47,7 @@
         </div>
 
         <div class="p-6">
-            <div class="flex justify-center mb-6">
-                <div class="inline-flex overflow-hidden bg-white border divide-x rounded-lg shadow-sm">
-                    <!-- Employee level access (programmer, technician) -->
-                    {{if or (eq .user_role "programmer") (eq .user_role "technician")}}
-                    <a href="/submit-request" class="px-5 py-3 text-xs font-medium text-gray-600 transition-colors duration-200 bg-gray-100 sm:text-sm hover:bg-blue-50 flex items-center">
-                        <i class="fas fa-file-alt mr-2 text-blue-500"></i>
-                        Submit Request
-                    </a>
-                    {{end}}
-
-                    <!-- Management level access (manager, chief_programmer, chief_technician) -->
-                    {{if or (eq .user_role "manager") (eq .user_role "chief_programmer") (eq .user_role "chief_technician")}}
-                    <a href="/requests" class="px-5 py-3 text-xs font-medium text-gray-600 transition-colors duration-200 sm:text-sm hover:bg-blue-50 flex items-center">
-                        <i class="fas fa-clipboard-list mr-2 text-blue-500"></i>
-                        Manage Requests
-                    </a>
-                    <a href="/notify" class="px-5 py-3 text-xs font-medium text-gray-600 transition-colors duration-200 sm:text-sm hover:bg-blue-50 flex items-center">
-                        <i class="fas fa-bell mr-2 text-blue-500"></i>
-                        Send Notifications
-                    </a>
-                    {{end}}
-                </div>
-            </div>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                <!-- Submit Request Card - For programmers and technicians -->
                 {{if or (eq .user_role "programmer") (eq .user_role "technician")}}
                 <div class="bg-blue-50 overflow-hidden shadow rounded-lg">
                     <div class="px-4 py-5 sm:p-6">
